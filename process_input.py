@@ -17,6 +17,7 @@ class LiteralConvertor:
         self.stored_reps = {}
         self.last_num = 2
     def get_rep(self, literal):
+        literal = literal.strip()
         neg_multiplier = 1
         if literal.startswith("~"):
             literal = literal.replace("~", "")
