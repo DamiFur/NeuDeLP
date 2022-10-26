@@ -2,6 +2,10 @@ import pandas as pd
 import re
 import random
 
+#TODO: define the argument size based on the programs we generate so all arguments fit
+ARGUMENT_SIZE = 20
+FILLER = 0
+
 # Types of implication: defeasable implication, regular implication, fact or presumption
 FACT = -1
 PRESUMPTION = 1
@@ -47,9 +51,9 @@ def convert_to_tensor(row):
     # Get a numeric value indicating which of the two arguments is the defeater
     output = 1 if arg2 == defeater else 0
 
-    arg1_input = process_argument(arg1, convertor)
-    arg2_input = process_argument(arg2, convertor)
-    
+    arg1_input = fix_length(process_argument(arg1, convertor))
+    arg2_input = fix_length(process_argument(arg2, convertor))
+
     print("Argument 1:")
     print(arg1)
     print(arg1_input)
@@ -57,13 +61,15 @@ def convert_to_tensor(row):
     print(arg2)
     print(arg2_input)
 
-    # TODO: Arguments should be of the same length
     input = arg1_input + [ARGSEP] + arg2_input
     print("-- INPUT --")
     print(input)
     print("-- OUTPUT --")
     print(output)
 
+
+def fix_length(encoded_argument):
+    return encoded_argument + [FILLER] * (ARGUMENT_SIZE - len(encoded_argument))
 
 def process_argument(argument, convertor):
     argument = argument.replace("[", "").replace("]", "")
