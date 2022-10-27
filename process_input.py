@@ -2,8 +2,13 @@ import pandas as pd
 import re
 import random
 
-# Types of implication: defeasable implication, regular implication or fact
-FACT = 0
+#TODO: define the argument size based on the programs we generate so all arguments fit
+ARGUMENT_SIZE = 20
+FILLER = 0
+
+# Types of implication: defeasable implication, regular implication, fact or presumption
+FACT = -1
+PRESUMPTION = 1
 DEFEASABLE = 1
 IMPLICATION = -1
 
@@ -16,9 +21,10 @@ class LiteralConvertor:
         self.stored_reps = {}
         self.last_num = 2
     def get_rep(self, literal):
+        literal = literal.strip()
         neg_multiplier = 1
         if literal.startswith("~"):
-            literal.replace("~", "")
+            literal = literal.replace("~", "")
             neg_multiplier = -1
         if literal in self.stored_reps:
             return self.stored_reps[literal] * neg_multiplier
@@ -45,31 +51,42 @@ def convert_to_tensor(row):
     # Get a numeric value indicating which of the two arguments is the defeater
     output = 1 if arg2 == defeater else 0
 
-    arg1_input = process_argument(arg1, convertor)
-    arg2_input = process_argument(arg2, convertor)
-    
-    # TODO: Arguments should be of the same length
+    arg1_input = fix_length(process_argument(arg1, convertor))
+    arg2_input = fix_length(process_argument(arg2, convertor))
+
+    print("Argument 1:")
+    print(arg1)
+    print(arg1_input)
+    print("Argument 2:")
+    print(arg2)
+    print(arg2_input)
+
     input = arg1_input + [ARGSEP] + arg2_input
+    print("-- INPUT --")
     print(input)
+    print("-- OUTPUT --")
     print(output)
 
 
+def fix_length(encoded_argument):
+    return encoded_argument + [FILLER] * (ARGUMENT_SIZE - len(encoded_argument))
+
 def process_argument(argument, convertor):
-    argument = argument.replace("[", "")
-    argument = argument.replace("]", "")
+    argument = argument.replace("[", "").replace("]", "")
     argument_parts = []
-    argument_splitted = argument.split("),")
+    argument_splitted = list(filter(None, sum(map(separate_facts, re.split(r'\(|\)', argument)),[])))
     for idx, rule in enumerate(argument_splitted):
-        rule = rule.replace("(", "").replace(")", "")
         rule_splitted = re.split(r'-<|<-', rule)
         consequent = convertor.get_rep(rule_splitted[0])
         antecedent = []
-        if len(rule_splitted) > 1:
+        if len(rule_splitted) > 1 and not 'true' in rule_splitted:
             for lit in rule_splitted[1].split(","):
                 antecedent.append(convertor.get_rep(lit))
         
         type_of_rule = FACT
-        if '-<' in rule:
+        if 'true' in rule:
+            type_of_rule = PRESUMPTION
+        elif '-<' in rule:
             type_of_rule = DEFEASABLE
         elif '<-' in rule:
             type_of_rule = IMPLICATION
@@ -81,7 +98,11 @@ def process_argument(argument, convertor):
             argument_parts.append(RULESEP) #TODO: Don't add when it's the last line
     return argument_parts
 
-
+def separate_facts(argument_element):
+    if '<' in argument_element:
+        return [argument_element]
+    else:
+        return argument_element.split(',')
 
 defs = pd.read_csv("defs.csv")
 
