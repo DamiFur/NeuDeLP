@@ -2,8 +2,8 @@ import pandas as pd
 import re
 import random
 
-#TODO: define the argument size based on the programs we generate so all arguments fit
-ARGUMENT_SIZE = 20
+#TODO: define the argument size based on the programs we generate so all arguments fit. Move this to a global param
+ARGUMENT_SIZE = 40
 FILLER = 0
 
 # Types of implication: defeasable implication, regular implication, fact or presumption
@@ -54,18 +54,20 @@ def convert_to_tensor(row):
     arg1_input = fix_length(process_argument(arg1, convertor))
     arg2_input = fix_length(process_argument(arg2, convertor))
 
-    print("Argument 1:")
-    print(arg1)
-    print(arg1_input)
-    print("Argument 2:")
-    print(arg2)
-    print(arg2_input)
+    # print("Argument 1:")
+    # print(arg1)
+    # print(arg1_input)
+    # print("Argument 2:")
+    # print(arg2)
+    # print(arg2_input)
 
     input = arg1_input + [ARGSEP] + arg2_input
-    print("-- INPUT --")
-    print(input)
-    print("-- OUTPUT --")
-    print(output)
+
+    return input, output
+    # print("-- INPUT --")
+    # print(len(input))
+    # print("-- OUTPUT --")
+    # print(output)
 
 
 def fix_length(encoded_argument):
@@ -104,7 +106,15 @@ def separate_facts(argument_element):
     else:
         return argument_element.split(',')
 
-defs = pd.read_csv("defs.csv")
+def get_input_data():
+    defs = pd.read_csv("defs.csv")
 
+    input_list = []
+    for row in defs.iterrows():
+        if row[1]['arg1'] != "arg1":
+            input_list.append((convert_to_tensor(row[1])))
+    
+    # l = len(input_list)
+    # test_input = [input_list[0]] * l
 
-defs.apply(convert_to_tensor, axis=1)
+    return input_list
