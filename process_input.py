@@ -1,20 +1,8 @@
 import pandas as pd
 import re
 import random
-
-#TODO: define the argument size based on the programs we generate so all arguments fit. Move this to a global param
-ARGUMENT_SIZE = 40
-FILLER = 0
-
-# Types of implication: defeasable implication, regular implication, fact or presumption
-FACT = -1
-PRESUMPTION = 1
-DEFEASABLE = 1
-IMPLICATION = -1
-
-# Separation within and between arguments
-RULESEP = 2
-ARGSEP = -2
+import config
+from sklearn.model_selection import train_test_split
 
 class LiteralConvertor:
     def __init__(self):
@@ -61,7 +49,7 @@ def convert_to_tensor(row):
     # print(arg2)
     # print(arg2_input)
 
-    input = arg1_input + [ARGSEP] + arg2_input
+    input = arg1_input + [config.ARGSEP] + arg2_input
 
     return input, output
     # print("-- INPUT --")
@@ -71,7 +59,7 @@ def convert_to_tensor(row):
 
 
 def fix_length(encoded_argument):
-    return encoded_argument + [FILLER] * (ARGUMENT_SIZE - len(encoded_argument))
+    return encoded_argument + [config.FILLER] * (config.ARGUMENT_SIZE - len(encoded_argument))
 
 def process_argument(argument, convertor):
     argument = argument.replace("[", "").replace("]", "")
@@ -85,19 +73,19 @@ def process_argument(argument, convertor):
             for lit in rule_splitted[1].split(","):
                 antecedent.append(convertor.get_rep(lit))
         
-        type_of_rule = FACT
+        type_of_rule = config.FACT
         if 'true' in rule:
-            type_of_rule = PRESUMPTION
+            type_of_rule = config.PRESUMPTION
         elif '-<' in rule:
-            type_of_rule = DEFEASABLE
+            type_of_rule = config.DEFEASABLE
         elif '<-' in rule:
-            type_of_rule = IMPLICATION
+            type_of_rule = config.IMPLICATION
 
         argument_parts.append(consequent)
         argument_parts.append(type_of_rule)
         argument_parts += antecedent
         if idx != len(argument_splitted) -1:
-            argument_parts.append(RULESEP) #TODO: Don't add when it's the last line
+            argument_parts.append(config.RULESEP) #TODO: Don't add when it's the last line
     return argument_parts
 
 def separate_facts(argument_element):
@@ -106,15 +94,19 @@ def separate_facts(argument_element):
     else:
         return argument_element.split(',')
 
-def get_input_data():
+def get_train_test_datasets():
     defs = pd.read_csv("defs.csv")
 
     input_list = []
     for row in defs.iterrows():
         if row[1]['arg1'] != "arg1":
             input_list.append((convert_to_tensor(row[1])))
+        
+        X = [input for input, output in input_list]
+        Y = [output for input, output in input_list]
+    return train_test_split(X, Y, test_size = 0.2)
     
     # l = len(input_list)
     # test_input = [input_list[0]] * l
 
-    return input_list
+    # return input_list
