@@ -6,11 +6,12 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 import config
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+import argparse
 
 
 class Net(nn.Module):
 
-    def __init__(self, num_layers=3, batch_size=5):
+    def __init__(self, num_layers=3):
         super(Net, self).__init__()
         self.fc1 = nn.Linear((config.ARGUMENT_SIZE * 2) + 1, 120)
         self.layers = []
@@ -26,7 +27,7 @@ class Net(nn.Module):
         return x
 
 
-def train_epoch(model, opt, criter, train_X, train_Y, batch_size=5):
+def train_epoch(model, opt, criter, train_X, train_Y):
     # TODO: Implement batch_size
     losses = []
     model.train()
@@ -45,7 +46,7 @@ def train_epoch(model, opt, criter, train_X, train_Y, batch_size=5):
     return losses
 
 
-def test_model(model, test_data, batch_size=50):
+def test_model(model, test_data):
     model.eval()
     preds = []
     truth = []
@@ -59,12 +60,19 @@ def test_model(model, test_data, batch_size=50):
 
     return [accuracy_score(truth, preds), precision_score(truth, preds), recall_score(truth, preds), f1_score(truth, preds)]
 
-net = Net(num_layers=5)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--lr", help="Learning rate value", type=float, default=2e-03)
+parser.add_argument("--num_layers", help="number of internal layers for the neural net", type=int, default=5)
+parser.add_argument("--epochs", help="Amount of epochs for the training process", type=int, default=10)
+args = parser.parse_args()
+
+net = Net(num_layers=args.num_layers)
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=2e-03)
+optimizer = optim.SGD(net.parameters(), lr=args.lr)
 
 acum_losses = []
-epochs = 10
+epochs = args.epochs
 
 X_train, X_test, Y_train, Y_test = get_train_test_datasets()
 
@@ -73,6 +81,6 @@ for e in range(epochs):
 
 print(test_model(net, list(zip(X_test, Y_test))))
 
-plt.plot(acum_losses)
-plt.savefig("test.png")
-plt.show()
+# plt.plot(acum_losses)
+# plt.savefig("test.png")
+# plt.show()
