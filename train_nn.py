@@ -55,10 +55,15 @@ def test_model(model, test_data):
         target = torch.FloatTensor([target])
         predicted = model(input)
 
+        #print("predicted: {} - target: {}".format(predicted, target))
+
         preds.append(round(float(predicted[0])))
         truth.append(round(float(target)))
 
-    return [accuracy_score(truth, preds), precision_score(truth, preds), recall_score(truth, preds), f1_score(truth, preds)]
+    # original
+    return [accuracy_score(truth, preds), precision_score(truth, preds, average='micro'), recall_score(truth, preds, average='micro'), f1_score(truth, preds, )]
+    # with blocking 
+    # return [accuracy_score(truth, preds), precision_score(truth, preds, average='micro'), recall_score(truth, preds, average='micro'), f1_score(truth, preds, average='micro')]
 
 
 parser = argparse.ArgumentParser()
@@ -76,6 +81,8 @@ acum_losses = []
 epochs = args.epochs
 
 X_train, X_test, Y_train, Y_test = get_train_test_datasets(args.complexity)
+
+print("Codification finished")
 
 for e in range(epochs):
     acum_losses += train_epoch(net, optimizer, criterion, X_train, Y_train)

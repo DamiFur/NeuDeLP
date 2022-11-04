@@ -37,7 +37,12 @@ def convert_to_tensor(row):
     arg2 = arguments_list[1]
 
     # Get a numeric value indicating which of the two arguments is the defeater
-    output = 1 if arg2 == defeater else 0
+    if defeater == 'blocking':
+        output = 2
+    elif arg2 == defeater:
+        output = 1
+    else:
+        output = 0
 
     arg1_input = fix_length(process_argument(arg1, convertor))
     arg2_input = fix_length(process_argument(arg2, convertor))
@@ -57,8 +62,9 @@ def convert_to_tensor(row):
     # print("-- OUTPUT --")
     # print(output)
 
-
 def fix_length(encoded_argument):
+    if len(encoded_argument) > config.ARGUMENT_SIZE:
+        raise Exception("Argument too long. Length: {}".format(len(encoded_argument)))
     return encoded_argument + [config.FILLER] * (config.ARGUMENT_SIZE - len(encoded_argument))
 
 def process_argument(argument, convertor):
