@@ -94,8 +94,8 @@ def separate_facts(argument_element):
     else:
         return argument_element.split(',')
 
-def get_train_test_datasets():
-    defs = pd.read_csv("defs.csv")
+def get_train_test_datasets(complexity):
+    defs = pd.read_csv("{}_program_args.csv".format(complexity))
 
     input_list = []
     for row in defs.iterrows():

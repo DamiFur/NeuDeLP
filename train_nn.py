@@ -65,6 +65,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--lr", help="Learning rate value", type=float, default=2e-03)
 parser.add_argument("--num_layers", help="number of internal layers for the neural net", type=int, default=5)
 parser.add_argument("--epochs", help="Amount of epochs for the training process", type=int, default=10)
+parser.add_argument("--complexity", help="Complexity of the programs generated for training the NN", type=str, default="simple", choices=["simple", "medium", "complex"])
 args = parser.parse_args()
 
 net = Net(num_layers=args.num_layers)
@@ -74,7 +75,7 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr)
 acum_losses = []
 epochs = args.epochs
 
-X_train, X_test, Y_train, Y_test = get_train_test_datasets()
+X_train, X_test, Y_train, Y_test = get_train_test_datasets(args.complexity)
 
 for e in range(epochs):
     acum_losses += train_epoch(net, optimizer, criterion, X_train, Y_train)
