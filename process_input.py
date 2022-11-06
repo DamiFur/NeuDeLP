@@ -25,7 +25,7 @@ class LiteralConvertor:
 convertor = LiteralConvertor()
 
 
-def convert_to_tensor(row):
+def convert_to_tensor(row, max_arg_size=config.ARGUMENT_SIZE, include_blocking=False):
     arg1 = row['arg1']
     arg2 = row['arg2']
     defeater = row['defeater']
@@ -44,8 +44,8 @@ def convert_to_tensor(row):
     else:
         output = 0
 
-    arg1_input = fix_length(process_argument(arg1, convertor))
-    arg2_input = fix_length(process_argument(arg2, convertor))
+    arg1_input = fix_length(process_argument(arg1, convertor), max_arg_size=max_arg_size)
+    arg2_input = fix_length(process_argument(arg2, convertor), max_arg_size=max_arg_size)
 
     # print("Argument 1:")
     # print(arg1)
@@ -62,10 +62,21 @@ def convert_to_tensor(row):
     # print("-- OUTPUT --")
     # print(output)
 
-def fix_length(encoded_argument):
-    if len(encoded_argument) > config.ARGUMENT_SIZE:
+def get_max_argument_size(csv):
+    max_size = 0
+    for row in csv.iterrows():
+        if row[1]['arg1'] != "arg1":
+            arg1 = row[1]['arg1']
+            arg2 = row[1]['arg2']
+            new_size = len(process_argument(arg1, convertor)) + len(process_argument(arg2, convertor)) + 1
+            if new_size > max_size:
+                max_size = new_size
+    return max_size
+
+def fix_length(encoded_argument, max_arg_size=config.ARGUMENT_SIZE):
+    if len(encoded_argument) > max_arg_size:
         raise Exception("Argument too long. Length: {}".format(len(encoded_argument)))
-    return encoded_argument + [config.FILLER] * (config.ARGUMENT_SIZE - len(encoded_argument))
+    return encoded_argument + [config.FILLER] * (max_arg_size - len(encoded_argument))
 
 def process_argument(argument, convertor):
     argument = argument.replace("[", "").replace("]", "")
@@ -100,19 +111,25 @@ def separate_facts(argument_element):
     else:
         return argument_element.split(',')
 
-def get_train_test_datasets(complexity):
-    defs = pd.read_csv("{}_program_args.csv".format(complexity))
+def get_train_test_datasets(complexity="simple", blocking=False, program_size=1000, output_size=2, presumptions="presumption_enabled", max_arg_size=-1):
+    blocking_str = "blocking"
+    if not blocking:
+        blocking_str = "no_blocking"
+    defs = pd.read_csv("datasets/{}-{}-{}-{}-{}.csv".format(complexity, blocking_str, program_size, output_size, presumptions))
+
+    if max_arg_size == -1:
+        max_arg_size = get_max_argument_size(defs)
 
     input_list = []
     for row in defs.iterrows():
         if row[1]['arg1'] != "arg1":
-            input_list.append((convert_to_tensor(row[1])))
+            input_list.append(convert_to_tensor(row[1], max_arg_size=max_arg_size))
         
         X = [input for input, output in input_list]
         Y = [output for input, output in input_list]
-    return train_test_split(X, Y, test_size = 0.2)
     
-    # l = len(input_list)
-    # test_input = [input_list[0]] * l
+    ans = []
+    for random_state in [42, 43, 44]:
+        ans.append(train_test_split(X, Y, test_size = 0.2, random_state = random_state))
 
-    # return input_list
+    return ans, max_arg_size
