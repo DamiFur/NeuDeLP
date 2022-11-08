@@ -37,7 +37,7 @@ def convert_to_tensor(row, max_arg_size=config.ARGUMENT_SIZE, include_blocking=F
     arg2 = arguments_list[1]
 
     # Get a numeric value indicating which of the two arguments is the defeater
-    if defeater == 'blocking':
+    if include_blocking and defeater == 'blocking':
         output = 2
     elif arg2 == defeater:
         output = 1
