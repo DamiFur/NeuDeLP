@@ -115,6 +115,7 @@ def get_train_test_datasets(complexity="simple", blocking=False, program_size=10
     blocking_str = "blocking"
     if not blocking:
         blocking_str = "no_blocking"
+    print("datasets/{}-{}-{}-{}-{}.csv".format(complexity, blocking_str, program_size, output_size, presumptions))
     defs = pd.read_csv("datasets/{}-{}-{}-{}-{}.csv".format(complexity, blocking_str, program_size, output_size, presumptions))
 
     if max_arg_size == -1:

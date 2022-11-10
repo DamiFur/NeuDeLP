@@ -37,7 +37,6 @@ class Net(nn.Module):
             # print(x)
         return x
 
-
 def train_epoch(model, opt, criter, train_X, train_Y):
     # TODO: Implement batch_size
     losses = []
@@ -102,12 +101,13 @@ parser.add_argument("--num_layers", help="number of internal layers for the neur
 parser.add_argument("--epochs", help="Amount of epochs for the training process", type=int, default=20)
 parser.add_argument("--complexity", help="Complexity of the programs generated for training the NN", type=str, default="simple", choices=["simple", "medium", "complex"])
 parser.add_argument("--blocking", help="Does program have blocking arguments?", type=bool, default=False)
-parser.add_argument("--presumptions", help="Does program have presumptions?", type=bool, default=True)
+parser.add_argument("--presumptions", help="Does program have presumptions?", type=bool, default=False)
 parser.add_argument("--program_size", help="Size of program taken as input", type=int, default=1000)
 parser.add_argument("--output_size", help="Two or three classes classification?", type=int, default=2)
 parser.add_argument("--arg_size", help="Size of the argument. Use -1 for using the longest argument length", type=int, default=-1)
 parser.add_argument("--layers_size", help="Size of inner layers", type=int, default=300)
 args = parser.parse_args()
+print(args)
 
 presumptions = "presumption_enabled" if args.presumptions else "presumption_disabled"
 datasets, max_arg_size = get_train_test_datasets(complexity=args.complexity, blocking=args.blocking, program_size=args.program_size, output_size=args.output_size, max_arg_size=args.arg_size, presumptions=presumptions)
