@@ -123,7 +123,7 @@ def get_train_test_datasets(complexity="simple", blocking=False, program_size=10
     input_list = []
     for row in defs.iterrows():
         if row[1]['arg1'] != "arg1":
-            input_list.append(convert_to_tensor(row[1], max_arg_size=max_arg_size))
+            input_list.append(convert_to_tensor(row[1], max_arg_size=max_arg_size, include_blocking=blocking))
         
         X = [input for input, output in input_list]
         Y = [output for input, output in input_list]

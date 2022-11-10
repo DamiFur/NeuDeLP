@@ -70,31 +70,27 @@ def test_model(model, test_data):
     model.eval()
     preds = []
     truth = []
-    print(test_data)
     for input, target in test_data:
         input = torch.FloatTensor(input)
         target = torch.FloatTensor([target])
         predicted = model(input)
 
         #print("predicted: {} - target: {}".format(predicted, target))
-
+        prd = -1
+        trth = -1
         if model.output_size != 2:
-            prd = torch.argmax(predicted, dim=0)
-            trth = torch.argmax(target, dim=0)
+            prd = float(torch.argmax(predicted, dim=0))
+            trth = float(target[0])
 
         else:
-            # print("lllllllllllllllll")
-            # print(predicted)
-            # print(target)
             prd = round(float(predicted[0]))
             trth = round(float(target[0]))
 
         preds.append(prd)
         truth.append(trth)
 
-    # original
     if model.output_layer != 2:
-        return [accuracy_score(truth, preds), precision_score(truth, preds, average='micro'), recall_score(truth, preds, average='micro'), f1_score(truth, preds, average='micro')]
+        return [accuracy_score(truth, preds), precision_score(truth, preds, average='macro'), recall_score(truth, preds, average='macro'), f1_score(truth, preds, average='macro')]
     return [accuracy_score(truth, preds), precision_score(truth, preds), recall_score(truth, preds), f1_score(truth, preds)]
     # with blocking 
     # return [accuracy_score(truth, preds), precision_score(truth, preds, average='micro'), recall_score(truth, preds, average='micro'), f1_score(truth, preds, average='micro')]
@@ -113,7 +109,6 @@ parser.add_argument("--arg_size", help="Size of the argument. Use -1 for using t
 parser.add_argument("--layers_size", help="Size of inner layers", type=int, default=300)
 args = parser.parse_args()
 
-print(args.output_size)
 presumptions = "presumption_enabled" if args.presumptions else "presumption_disabled"
 datasets, max_arg_size = get_train_test_datasets(complexity=args.complexity, blocking=args.blocking, program_size=args.program_size, output_size=args.output_size, max_arg_size=args.arg_size, presumptions=presumptions)
 net = Net(num_layers=args.num_layers, input_size=2*max_arg_size+1, output_size=args.output_size, layers_size=args.layers_size)
