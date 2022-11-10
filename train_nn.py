@@ -111,9 +111,7 @@ print(args)
 
 presumptions = "presumption_enabled" if args.presumptions else "presumption_disabled"
 datasets, max_arg_size = get_train_test_datasets(complexity=args.complexity, blocking=args.blocking, program_size=args.program_size, output_size=args.output_size, max_arg_size=args.arg_size, presumptions=presumptions)
-net = Net(num_layers=args.num_layers, input_size=2*max_arg_size+1, output_size=args.output_size, layers_size=args.layers_size)
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=args.lr)
 
 acum_losses = []
 epochs = args.epochs
@@ -125,6 +123,8 @@ recall = []
 f1 = []
 w = open("results/res_{},{},{},{},{},{},{},{}".format(args.lr, args.num_layers, args.complexity, args.blocking, args.output_size, presumptions, args.layers_size, args.program_size), "w")
 for X_train, X_test, Y_train, Y_test in datasets:
+    net = Net(num_layers=args.num_layers, input_size=2*max_arg_size+1, output_size=args.output_size, layers_size=args.layers_size)
+    optimizer = optim.SGD(net.parameters(), lr=args.lr)
     for e in range(epochs):
         acum_losses += train_epoch(net, optimizer, criterion, X_train, Y_train)
 
@@ -134,6 +134,8 @@ for X_train, X_test, Y_train, Y_test in datasets:
     precision.append(metrics_aux[1])
     recall.append(metrics_aux[2])
     f1.append(metrics_aux[3])
+    print("[[[[[[[[[[[[[[[[[[[[[[[[[")
+    print(f1)
 
 l = len(datasets)
 print("{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format(args.lr, args.num_layers, args.complexity, args.blocking, args.output_size, presumptions, args.layers_size, args.program_size, statistics.mean(accuracy), statistics.mean(precision), statistics.mean(recall), statistics.mean(f1), statistics.stdev(f1)))
