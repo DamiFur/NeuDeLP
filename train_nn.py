@@ -88,7 +88,7 @@ def test_model(model, test_data):
         preds.append(prd)
         truth.append(trth)
 
-    if model.output_layer != 2:
+    if model.output_size != 2:
         return [accuracy_score(truth, preds), precision_score(truth, preds, average='macro'), recall_score(truth, preds, average='macro'), f1_score(truth, preds, average='macro')]
     return [accuracy_score(truth, preds), precision_score(truth, preds), recall_score(truth, preds), f1_score(truth, preds)]
     # with blocking 
